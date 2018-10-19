@@ -1,0 +1,54 @@
+#+TITLE: AtomicData.jl
+#+AUTHOR: Stefanos Carlström
+#+EMAIL: stefanos.carlstromg@gmail.com
+
+#+PROPERTY: header-args:julia :session *julia-README*
+
+* Introduction
+  A small helper library to download atomic data from the [[https://physics.nist.gov/PhysRefData/ASD/levels_form.html][NIST Atomic Spectra Database]].
+
+* Usage
+  This loads the library and requests atomic data for singly ionized
+  helium, energies in electronvolt:
+  #+BEGIN_SRC julia :exports both :results verbatim
+    using AtomicData
+    using Unitful
+    using DataFrames
+
+    head(get_nist_data("He II", u"eV"))
+  #+END_SRC
+
+  #+RESULTS:
+  #+begin_example
+  6×7 DataFrame
+  │ Row │ Configuration │ Term    │ J         │ Level      │ Uncertainty │ Leading percentages │ Reference │
+  │     │ String⍰       │ String⍰ │ Rationa…⍰ │ Union…⍰    │ Union…⍰     │ Int64⍰              │ String⍰   │
+  ├─────┼───────────────┼─────────┼───────────┼────────────┼─────────────┼─────────────────────┼───────────┤
+  │ 1   │ 1s            │ 2S      │ 1//2      │ 0.0 eV     │ 2.5e-8 eV   │ 100                 │ missing   │
+  │ 2   │ 2p            │ 2P*     │ 1//2      │ 40.813 eV  │ 3.0e-7 eV   │ 100                 │ L3620c107 │
+  │ 3   │ 2p            │ 2P*     │ 3//2      │ 40.8138 eV │ 3.0e-7 eV   │ 100                 │ L3620c107 │
+  │ 4   │ 2s            │ 2S      │ 1//2      │ 40.8131 eV │ 3.0e-7 eV   │ 100                 │ L3620c107 │
+  │ 5   │ 3p            │ 2P*     │ 1//2      │ 48.3713 eV │ 3.0e-7 eV   │ 100                 │ L3620c107 │
+  │ 6   │ 3p            │ 2P*     │ 3//2      │ 48.3715 eV │ 3.0e-7 eV   │ 100                 │ L3620c107 │
+  #+end_example
+
+  Same as above, but for singly ionized xenon instead, in units of Rydbergs:
+  #+BEGIN_SRC julia :exports both :results verbatim
+    head(get_nist_data("Xe II", u"Ry"))
+  #+END_SRC
+
+  #+RESULTS:
+  #+begin_example
+  6×7 DataFrame
+  │ Row │ Configuration  │ Term    │ J         │ Level        │ Uncertainty │ Lande    │ Reference │
+  │     │ String⍰        │ String⍰ │ Rationa…⍰ │ Union…⍰      │ Union…⍰     │ Float64⍰ │ String⍰   │
+  ├─────┼────────────────┼─────────┼───────────┼──────────────┼─────────────┼──────────┼───────────┤
+  │ 1   │ 5p5            │ 2P*     │ 3//2      │ 0.0 Ry       │ missing     │ missing  │ L6925     │
+  │ 2   │ 5p5            │ 2P*     │ 1//2      │ 0.0960203 Ry │ missing     │ missing  │ L6925     │
+  │ 3   │ 5s.5p6         │ 2S      │ 1//2      │ 0.828103 Ry  │ missing     │ 2.02     │ L6925     │
+  │ 4   │ 5p4.(3P<2>).6s │ 2[2]    │ 5//2      │ 0.848102 Ry  │ missing     │ 1.56     │ L6925     │
+  │ 5   │ 5p4.(3P<2>).6s │ 2[2]    │ 3//2      │ 0.86629 Ry   │ missing     │ 1.38     │ L6925     │
+  │ 6   │ 5p4.(3P<2>).5d │ 2[2]    │ 5//2      │ 0.869319 Ry  │ missing     │ 1.36     │ L6925     │
+  #+end_example
+
+
