@@ -8,7 +8,7 @@ using Unitful
             df = get_nist_data(el, unit)
             # Slightly bogus checks
             @test size(df,1) > 0
-            @test size(df,2) >= 8
+            @test size(df,2) > 0
         end
     end
 end
