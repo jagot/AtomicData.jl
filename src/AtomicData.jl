@@ -21,13 +21,20 @@ using Unitful
 using HTTP
 
 function parse_J(J::Vector)
-    map(J) do j
-        if j == "---"
-            missing
-        elseif occursin("/", j)
+    function parse_number(j::AbstractString)
+        if occursin("/", j)
             //(parse.(Ref(Int), split(j, "/"))...)
         else
             parse(Int, j)
+        end
+    end
+    map(J) do j
+        if ismissing(j) || j == "---"
+            missing
+        elseif occursin(",", j)
+            parse_number.(split(j, ","))
+        else
+            parse_number(j)
         end
     end
 end

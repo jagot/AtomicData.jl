@@ -1,4 +1,5 @@
 using AtomicData
+using Test
 using Unitful
 
 @testset "Simple queries" begin
