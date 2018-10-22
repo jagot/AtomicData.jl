@@ -4,6 +4,12 @@
 
 #+PROPERTY: header-args:julia :session *julia-README*
 
+[[https://travis-ci.org/jagot/AtomicData.jl][https://travis-ci.org/jagot/AtomicData.jl.svg?branch=master]]
+#+HTML: <a href="https://ci.appveyor.com/project/jagot/AtomicData-jl"><img src="https://ci.appveyor.com/api/projects/status/jjxskki382qhauta?svg=true" alt="Sorry, your browser does not support SVG."/></a>
+
+[[https://coveralls.io/github/jagot/AtomicData.jl?branch=master][https://coveralls.io/repos/github/jagot/AtomicData.jl/badge.svg?branch=master]]
+[[https://codecov.io/gh/jagot/AtomicData.jl][https://codecov.io/gh/jagot/AtomicData.jl/branch/master/graph/badge.svg]]
+
 * Introduction
   A small helper library to download atomic data from the [[https://physics.nist.gov/PhysRefData/ASD/levels_form.html][NIST Atomic Spectra Database]].
 
