@@ -5,6 +5,9 @@ using Unitful
 @unit Ry "Ry" Rydberg 13.605_693_009u"eV" false;
 @unit Ha "Ha" Hartree 27.211_386_02u"eV" false;
 
+# This __init__ etc. is necessary for Unitful for the units
+# to be fully available when this package is loaded.
+# (http://ajkeller34.github.io/Unitful.jl/stable/extending/)
 const _local_Unitful_basefactors = Unitful.basefactors
 function __init__()
     # To use the atomic units outside this module
