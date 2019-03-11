@@ -10,8 +10,10 @@ using Unitful
 # To use the atomic units inside this module
 Unitful.register(AtomicUnits)
 
+const _local_Unitful_basefactors = Unitful.basefactors
 function __init__()
     # To use the atomic units outside this module
+    merge!(Unitful.basefactors, _local_Unitful_basefactors)
     Unitful.register(AtomicUnits)
 end
 
