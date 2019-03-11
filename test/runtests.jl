@@ -2,6 +2,11 @@ using AtomicData
 using Test
 using Unitful
 
+@testset "Units" begin
+    @test isa(u"Ha", Unitful.FreeUnits)
+    @test isa(u"Ry", Unitful.FreeUnits)
+end
+
 @testset "Simple queries" begin
     for unit in [u"cm^-1", u"eV", u"Ry"]
         for el in ["He I", "He II", "W I", "Xe I", "Xe II"]
