@@ -4,11 +4,6 @@ module AtomicUnits
 using Unitful
 @unit Ry "Ry" Rydberg 13.605_693_009u"eV" false;
 @unit Ha "Ha" Hartree 27.211_386_02u"eV" false;
-end
-
-using Unitful
-# To use the atomic units inside this module
-Unitful.register(AtomicUnits)
 
 const _local_Unitful_basefactors = Unitful.basefactors
 function __init__()
@@ -16,6 +11,8 @@ function __init__()
     merge!(Unitful.basefactors, _local_Unitful_basefactors)
     Unitful.register(AtomicUnits)
 end
+Unitful.register(AtomicUnits)
+end # module AtomicUnits
 
 using DataFrames
 using CSV
