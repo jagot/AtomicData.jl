@@ -1,6 +1,5 @@
 module AtomicData
 
-module AtomicUnits
 using Unitful
 @unit Ry "Ry" Rydberg 13.605_693_009u"eV" false;
 @unit Ha "Ha" Hartree 27.211_386_02u"eV" false;
@@ -12,14 +11,12 @@ const _local_Unitful_basefactors = Unitful.basefactors
 function __init__()
     # To use the atomic units outside this module
     merge!(Unitful.basefactors, _local_Unitful_basefactors)
-    Unitful.register(AtomicUnits)
+    Unitful.register(AtomicData)
 end
-Unitful.register(AtomicUnits)
-end # module AtomicUnits
+Unitful.register(AtomicData)
 
 using DataFrames
 using CSV
-using Unitful
 using HTTP
 
 function parse_J(J::Vector)
