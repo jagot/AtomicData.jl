@@ -8,7 +8,7 @@ using Unitful
 end
 
 @testset "Simple queries" begin
-    for unit in [u"cm^-1", u"eV", u"Ry"]
+    for unit in [u"cm^-1", u"eV", u"Ry", u"Ha"]
         for el in ["He I", "He II", "W I", "Xe I", "Xe II"]
             df = get_nist_data(el, unit)
             # Slightly bogus checks
