@@ -21,7 +21,7 @@
     using Unitful
     using DataFrames
 
-    head(get_nist_data("He II", u"eV"))
+    first(get_nist_data("He II", u"eV"), 6)
   #+END_SRC
 
   #+RESULTS:
@@ -40,7 +40,7 @@
 
   Same as above, but for singly ionized xenon instead, in units of Rydbergs:
   #+BEGIN_SRC julia :exports both :results verbatim
-    head(get_nist_data("Xe II", u"Ry"))
+    first(get_nist_data("Xe II", u"Ry"), 6)
   #+END_SRC
 
   #+RESULTS:

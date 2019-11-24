@@ -19,7 +19,7 @@ using DataFrames
 using CSV
 using HTTP
 
-function parse_J(J::Vector)
+function parse_J(J::AbstractVector)
     function parse_number(j::AbstractString)
         if occursin("/", j)
             //(parse.(Ref(Int), split(j, "/"))...)
@@ -38,7 +38,7 @@ function parse_J(J::Vector)
     end
 end
 
-function parse_eng(E::Vector{Union{Missing,String}}, unit)
+function parse_eng(E::AbstractVector{<:Union{Missing,String}}, unit)
     map(E) do EE
         if !ismissing(EE)
             for c in " ()[]"
@@ -56,7 +56,7 @@ function parse_eng(E::Vector{Union{Missing,String}}, unit)
     end |> Vector{Union{Missing,Quantity}}
 end
 
-function parse_eng(E::Vector{Union{Missing,T}}, unit) where {T<:Real}
+function parse_eng(E::AbstractVector{<:Union{Missing,<:Real}}, unit)
     map(E) do EE
         if !ismissing(EE)
             if unit == u"Ha"
@@ -73,7 +73,7 @@ end
 function get_nist_data(io::IO, unit)
     df = io |> f -> CSV.File(f, delim='\t') |> DataFrame
 
-    [df[1:2] DataFrame(J = parse_J(df[3]), Level = parse_eng(df[4], unit), Uncertainty = parse_eng(df[5], unit)) df[6:end]]
+    [df[:, 1:2] DataFrame(J = parse_J(df[!, 3]), Level = parse_eng(df[!, 4], unit), Uncertainty = parse_eng(df[!, 5], unit)) df[:, 6:end]]
 end
 
 function get_nist_data(name::String, unit)
