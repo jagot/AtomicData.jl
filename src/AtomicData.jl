@@ -92,4 +92,6 @@ end
 
 export get_nist_data
 
+include("latex_tables.jl")
+
 end # module
