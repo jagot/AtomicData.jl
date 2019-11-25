@@ -1,15 +1,17 @@
 using Printf
 
-Jstr(J::Rational) = "$(numerator(J))/$(denominator(J))"
+Jstr(J::Rational) = isone(denominator(J)) ? "$(numerator(J))" : "$(numerator(J))/$(denominator(J))"
 Jstr(J::Integer) = "$J"
 Jstr(J::AbstractString) = J
+Jstr(J::AbstractVector) = join(Jstr.(J), ",")
 
 function term_str(term, J)
     i = findfirst(!isnumeric, term)
-    mult = parse(Int, term[1:i-1])
+    mult = i > 1 ? parse(Int, term[1:i-1]) : 0
     isoddterm = term[end] == '*'
     termsym = isoddterm ? term[i:end-1] : term[i:end]
-    terms = "\$^{$mult}\$$(termsym)"*(isoddterm ? "\$^{\\textrm{o}}\$" : "")
+
+    terms = (i > 1 ? "\$^{$mult}\$$(termsym)" : termsym)*(isoddterm ? "\$^{\\textrm{o}}\$" : "")
     ismissing(J) ? terms : "$(terms)\$_{$(Jstr(J))}\$"
 end
 
@@ -28,9 +30,23 @@ function cfg_str(cfg)
     join(subshells, " ")
 end
 
+limit_str(::Missing) = ""
+
+function limit_str(cfg)
+    m = match(r"(.*)\((.*)\)", cfg)
+
+    if isnothing(m)
+        cfg
+    else
+        a,b = split(m[2], " ")
+        cfgs = cfg_str("$(a).($(b))")
+        "$(m[1]) [$(cfg_str(cfgs))]"
+    end
+end
+
 function latex_table(io::IO, data, name; offset=0u"eV")
     no_offset = iszero(NoUnits(offset/u"eV"))
-    
+
     write(io, "\\section{$name}\n\\footnotesize\n")
     write(io, "\\tablehead{%\n")
     write(io, "\\textbf{Configuration}&\\textbf{Term}&\\textbf{Energy}")
@@ -45,19 +61,10 @@ function latex_table(io::IO, data, name; offset=0u"eV")
     Es = data[!,4]
     for (cfg,term,J,E) in zip(cfgs,terms,Js,Es)
         Eoff = NoUnits((E + offset)/u"eV")
+        ismissing(term) && continue
         if term == "Limit"
             write(io, "\\hline\n")
-            m = match(r"(.*)\((.*)\)", cfg)
-
-            cfgs = if isnothing(m)
-                cfg
-            else
-                a,b = split(m[2], " ")
-                cfgs = cfg_str("$(a).($(b))")
-                "$(m[1]) [$(cfg_str(cfgs))]"
-            end
-                
-            write(io, @sprintf("%s & Limit & %08.5f eV", cfgs, NoUnits(E/u"eV")))
+            write(io, @sprintf("%s & Limit & %08.5f eV", limit_str(cfg), NoUnits(E/u"eV")))
             no_offset || write(io, @sprintf("& %08.5f eV", Eoff))
             write(io, "\\\\\n")
             continue
@@ -65,9 +72,9 @@ function latex_table(io::IO, data, name; offset=0u"eV")
         write(io, @sprintf("%s & %s & %08.5f eV", cfg_str(cfg), term_str(term,J), NoUnits(E/u"eV")))
             no_offset || write(io, @sprintf("& %08.5f eV", Eoff))
         write(io, "\\\\\n")
-        
+
     end
-    
+
     write(io, "\\end{supertabular}\n\n")
 end
 
