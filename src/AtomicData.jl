@@ -90,7 +90,18 @@ function get_nist_data(name::String, unit)
     req_body |> IOBuffer |> io -> get_nist_data(io, unit)
 end
 
-export get_nist_data
+macro get_nist_data(varname, name, args...)
+    varstr = string(varname)
+    glob = Expr(:global, varname)
+    quote
+        if !isdefined(Main, Symbol($varstr))
+            $glob
+            $(esc(varname)) = get_nist_data($name, $(args...))
+        end
+    end
+end
+
+export get_nist_data, @get_nist_data
 
 include("latex_tables.jl")
 
