@@ -3,7 +3,12 @@ module AtomicData
 using Unitful
 using UnitfulAtomic
 
+using Scratch
+
+download_cache = ""
+
 function __init__()
+    global download_cache = @get_scratch!("AtomicData.jl")
 end
 
 using DataFrames
@@ -61,10 +66,25 @@ function parse_eng(E::AbstractVector{<:Union{Missing,<:Real}}, unit)
     end |> Vector{Union{Missing,Quantity}}
 end
 
-function get_nist_data(io::IO, unit)
-    df = io |> f -> CSV.File(f, delim='\t') |> DataFrame
+function get_nist_data(f::CSV.File, unit)
+    df = DataFrame(f)
 
     [df[:, 1:2] DataFrame(J = parse_J(df[!, 3]), Level = parse_eng(df[!, 4], unit), Uncertainty = parse_eng(df[!, 5], unit)) df[:, 6:end]]
+end
+
+function download(name, url, filename)
+    req_body = HTTP.request("GET", url).body |> String
+    occursin("Invalid element symbol", req_body) && error("Failed to retrieve atomic data for $(name)")
+    @info "Downloading from" url filename
+    open(filename, "w") do file
+        write(file, req_body)
+    end
+end
+
+function download_dataset(name, url)
+    filename = joinpath(download_cache, name*".csv")
+    isfile(filename) || download(name, url, filename)
+    filename
 end
 
 function get_nist_data(name::String, unit)
@@ -75,23 +95,16 @@ function get_nist_data(name::String, unit)
     http_name = replace(name, " " => "+")
     url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?encodedlist=XXT2&de=0&spectrum=$(http_name)&units=$(units[unit])&upper_limit=&parity_limit=both&conf_limit=All&conf_limit_begin=&conf_limit_end=&term_limit=All&term_limit_begin=&term_limit_end=&J_limit=&format=3&output=0&page_size=15&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=on&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
 
-    req_body = HTTP.request("GET", url).body |> String
-    occursin("Invalid element symbol", req_body) && error("Failed to retrieve atomic data for $(name)")
-    req_body |> IOBuffer |> io -> get_nist_data(io, unit)
+    get_nist_data(CSV.File(download_dataset(name, url), delim='\t'), unit)
 end
 
-macro get_nist_data(varname, name, args...)
-    varstr = string(varname)
-    glob = Expr(:global, varname)
-    quote
-        if !isdefined(Main, Symbol($varstr))
-            $glob
-            $(esc(varname)) = get_nist_data($name, $(args...))
-        end
-    end
+function clear_cache!()
+    files = readdir(download_cache)
+    @info "Deleting files in cache dir" files
+    foreach(f -> rm(joinpath(download_cache, f)), files)
 end
 
-export get_nist_data, @get_nist_data
+export get_nist_data
 
 include("latex_tables.jl")
 
