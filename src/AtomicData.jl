@@ -1,19 +1,10 @@
 module AtomicData
 
 using Unitful
-@unit Ry "Ry" Rydberg 13.605_693_009u"eV" false;
-@unit Ha "Ha" Hartree 27.211_386_02u"eV" false;
+using UnitfulAtomic
 
-# This __init__ etc. is necessary for Unitful for the units
-# to be fully available when this package is loaded.
-# (http://ajkeller34.github.io/Unitful.jl/stable/extending/)
-const _local_Unitful_basefactors = Unitful.basefactors
 function __init__()
-    # To use the atomic units outside this module
-    merge!(Unitful.basefactors, _local_Unitful_basefactors)
-    Unitful.register(AtomicData)
 end
-Unitful.register(AtomicData)
 
 using DataFrames
 using CSV
@@ -45,8 +36,8 @@ function parse_eng(E::AbstractVector{<:Union{Missing,String}}, unit)
                 EE = replace(EE, c=>"")
             end
             v = parse(Float64, EE)
-            if unit == u"Ha"
-                v*u"Ry" |> u"Ha"
+            if unit == u"hartree"
+                v*u"Ry" |> u"hartree"
             else
                 v*unit
             end
@@ -59,8 +50,8 @@ end
 function parse_eng(E::AbstractVector{<:Union{Missing,<:Real}}, unit)
     map(E) do EE
         if !ismissing(EE)
-            if unit == u"Ha"
-                EE*u"Ry" |> u"Ha"
+            if unit == u"hartree"
+                EE*u"Ry" |> u"hartree"
             else
                 EE*unit
             end
@@ -80,8 +71,7 @@ function get_nist_data(name::String, unit)
     units = Dict(u"cm"^(-1) => 0,
                  u"eV" => 1,
                  u"Ry" => 2,
-                 u"Ha" => 2
-                 )
+                 u"hartree" => 2)
     http_name = replace(name, " " => "+")
     url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?encodedlist=XXT2&de=0&spectrum=$(http_name)&units=$(units[unit])&upper_limit=&parity_limit=both&conf_limit=All&conf_limit_begin=&conf_limit_end=&term_limit=All&term_limit_begin=&term_limit_end=&J_limit=&format=3&output=0&page_size=15&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=on&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
 
