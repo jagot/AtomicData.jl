@@ -81,8 +81,8 @@ function download(name, url, filename)
     end
 end
 
-function download_dataset(name, url)
-    filename = joinpath(download_cache, name*".csv")
+function download_dataset(name, url, unit_id)
+    filename = joinpath(download_cache, "$(name)-units=$(unit_id).csv")
     isfile(filename) || download(name, url, filename)
     filename
 end
@@ -92,10 +92,11 @@ function get_nist_data(name::String, unit)
                  u"eV" => 1,
                  u"Ry" => 2,
                  u"hartree" => 2)
+    unit_id = units[unit]
     http_name = replace(name, " " => "+")
-    url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?encodedlist=XXT2&de=0&spectrum=$(http_name)&units=$(units[unit])&upper_limit=&parity_limit=both&conf_limit=All&conf_limit_begin=&conf_limit_end=&term_limit=All&term_limit_begin=&term_limit_end=&J_limit=&format=3&output=0&page_size=15&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=on&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
+    url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?encodedlist=XXT2&de=0&spectrum=$(http_name)&units=$(unit_id)&upper_limit=&parity_limit=both&conf_limit=All&conf_limit_begin=&conf_limit_end=&term_limit=All&term_limit_begin=&term_limit_end=&J_limit=&format=3&output=0&page_size=15&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=on&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
 
-    get_nist_data(CSV.File(download_dataset(name, url), delim='\t'), unit)
+    get_nist_data(CSV.File(download_dataset(name, url, unit_id), delim='\t'), unit)
 end
 
 function clear_cache!()
