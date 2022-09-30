@@ -34,7 +34,7 @@ function parse_J(J::AbstractVector)
     end
 end
 
-function parse_eng(E::AbstractVector{<:Union{Missing,String}}, unit)
+function parse_eng(E::AbstractVector{<:Union{Missing,AbstractString}}, unit)
     map(E) do EE
         if !ismissing(EE)
             for c in " ()[]"
@@ -52,7 +52,7 @@ function parse_eng(E::AbstractVector{<:Union{Missing,String}}, unit)
     end |> Vector{Union{Missing,Quantity}}
 end
 
-function parse_eng(E::AbstractVector{<:Union{Missing,<:Real}}, unit)
+function parse_eng(E::AbstractVector{<:Union{Missing,Real}}, unit)
     map(E) do EE
         if !ismissing(EE)
             if unit == u"hartree"
