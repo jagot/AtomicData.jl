@@ -13,3 +13,12 @@ using UnitfulAtomic
         end
     end
 end
+
+@testset "LaTeX table generation" begin
+    df = get_nist_data("He I", u"hartree")
+    mktempdir() do dir
+        filename = joinpath(dir, "HeI.tex")
+        latex_table(filename, df, "He I")
+        @test isfile(filename)
+    end
+end
