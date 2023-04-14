@@ -24,7 +24,7 @@ function parse_J(J::AbstractVector)
         end
     end
     map(J) do j
-        if ismissing(j) || j == "---"
+        if ismissing(j) || j == "---" || isempty(strip(j))
             missing
         elseif occursin(",", j)
             parse_number.(split(j, ","))
@@ -40,6 +40,7 @@ function parse_eng(E::AbstractVector{<:Union{Missing,AbstractString}}, unit)
             for c in " ()[]"
                 EE = replace(EE, c=>"")
             end
+            isempty(strip(EE)) && return missing
             v = parse(Float64, EE)
             if unit == u"hartree"
                 v*u"Ry" |> u"hartree"
@@ -69,7 +70,23 @@ end
 function get_nist_data(f::CSV.File, unit)
     df = DataFrame(f)
 
-    [df[:, 1:2] DataFrame(J = parse_J(df[!, 3]), Level = parse_eng(df[!, 4], unit), Uncertainty = parse_eng(df[!, 5], unit)) df[:, 6:end]]
+    mapping = Vector{Tuple{Int,Symbol,Function}}()
+    for (i,k) in enumerate(propertynames(df))
+        (k == :Prefix || k == :Suffix) && continue
+        sk = string(k)
+        (nk,fun) = if occursin(r"^J", sk)
+            (:J, parse_J)
+        elseif occursin(r"^Level", sk)
+            (:Level, Base.Fix2(parse_eng, unit))
+        elseif occursin(r"^Uncertainty", sk)
+            (:Uncertainty, Base.Fix2(parse_eng, unit))
+        else
+            (k, identity)
+        end
+        push!(mapping, (i, nk, fun))
+    end
+
+    reduce(hcat, DataFrame(sym => fun(df[!, i])) for (i,sym,fun) in mapping)
 end
 
 function download(name, url, filename)
@@ -94,7 +111,36 @@ function get_nist_data(name::String, unit)
                  u"hartree" => 2)
     unit_id = units[unit]
     http_name = replace(name, " " => "+")
-    url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?encodedlist=XXT2&de=0&spectrum=$(http_name)&units=$(unit_id)&upper_limit=&parity_limit=both&conf_limit=All&conf_limit_begin=&conf_limit_end=&term_limit=All&term_limit_begin=&term_limit_end=&J_limit=&format=3&output=0&page_size=15&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=on&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
+    base_url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl"
+    http_params = [
+                  "de" => "0",
+                  "spectrum" => http_name,
+                  "units" => unit_id,
+                  "upper_limit" => "",
+                  "parity_limit" => "both",
+                  "conf_limit" => "All",
+                  "conf_limit_begin" => "",
+                  "conf_limit_end" => "",
+                  "term_limit" => "All",
+                  "term_limit_begin" => "",
+                  "term_limit_end" => "",
+                  "J_limit" => "",
+                  "format" => "3",
+                  "output" => "0",
+                  "page_size" => "15",
+                  "multiplet_ordered" => "0",
+                  "conf_out" => "on",
+                  "term_out" => "on",
+                  "level_out" => "on",
+                  "unc_out" => "on",
+                  "j_out" => "on",
+                  "lande_out" => "on",
+                  "perc_out" => "on",
+                  "biblio" => "on",
+                  "temp" => "",
+                  "submit" => "Retrieve+Data",
+    ]
+    url = "$(base_url)?"*join(["$(k)=$(v)" for (k,v) in http_params], "&")
 
     get_nist_data(CSV.File(download_dataset(name, url, unit_id), delim='\t'), unit)
 end
