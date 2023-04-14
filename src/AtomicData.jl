@@ -111,7 +111,36 @@ function get_nist_data(name::String, unit)
                  u"hartree" => 2)
     unit_id = units[unit]
     http_name = replace(name, " " => "+")
-    url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl?encodedlist=XXT2&de=0&spectrum=$(http_name)&units=$(unit_id)&upper_limit=&parity_limit=both&conf_limit=All&conf_limit_begin=&conf_limit_end=&term_limit=All&term_limit_begin=&term_limit_end=&J_limit=&format=3&output=0&page_size=15&multiplet_ordered=0&conf_out=on&term_out=on&level_out=on&unc_out=on&j_out=on&lande_out=on&perc_out=on&biblio=on&temp=&submit=Retrieve+Data"
+    base_url = "https://physics.nist.gov/cgi-bin/ASD/energy1.pl"
+    http_params = [
+                  "de" => "0",
+                  "spectrum" => http_name,
+                  "units" => unit_id,
+                  "upper_limit" => "",
+                  "parity_limit" => "both",
+                  "conf_limit" => "All",
+                  "conf_limit_begin" => "",
+                  "conf_limit_end" => "",
+                  "term_limit" => "All",
+                  "term_limit_begin" => "",
+                  "term_limit_end" => "",
+                  "J_limit" => "",
+                  "format" => "3",
+                  "output" => "0",
+                  "page_size" => "15",
+                  "multiplet_ordered" => "0",
+                  "conf_out" => "on",
+                  "term_out" => "on",
+                  "level_out" => "on",
+                  "unc_out" => "on",
+                  "j_out" => "on",
+                  "lande_out" => "on",
+                  "perc_out" => "on",
+                  "biblio" => "on",
+                  "temp" => "",
+                  "submit" => "Retrieve+Data",
+    ]
+    url = "$(base_url)?"*join(["$(k)=$(v)" for (k,v) in http_params], "&")
 
     get_nist_data(CSV.File(download_dataset(name, url, unit_id), delim='\t'), unit)
 end
