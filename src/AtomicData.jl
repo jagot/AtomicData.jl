@@ -24,7 +24,7 @@ function parse_J(J::AbstractVector)
         end
     end
     map(J) do j
-        if ismissing(j) || j == "---"
+        if ismissing(j) || j == "---" || isempty(strip(j))
             missing
         elseif occursin(",", j)
             parse_number.(split(j, ","))
@@ -40,6 +40,7 @@ function parse_eng(E::AbstractVector{<:Union{Missing,AbstractString}}, unit)
             for c in " ()[]"
                 EE = replace(EE, c=>"")
             end
+            isempty(strip(EE)) && return missing
             v = parse(Float64, EE)
             if unit == u"hartree"
                 v*u"Ry" |> u"hartree"
@@ -69,7 +70,23 @@ end
 function get_nist_data(f::CSV.File, unit)
     df = DataFrame(f)
 
-    [df[:, 1:2] DataFrame(J = parse_J(df[!, 3]), Level = parse_eng(df[!, 4], unit), Uncertainty = parse_eng(df[!, 5], unit)) df[:, 6:end]]
+    mapping = Vector{Tuple{Int,Symbol,Function}}()
+    for (i,k) in enumerate(propertynames(df))
+        (k == :Prefix || k == :Suffix) && continue
+        sk = string(k)
+        (nk,fun) = if occursin(r"^J", sk)
+            (:J, parse_J)
+        elseif occursin(r"^Level", sk)
+            (:Level, Base.Fix2(parse_eng, unit))
+        elseif occursin(r"^Uncertainty", sk)
+            (:Uncertainty, Base.Fix2(parse_eng, unit))
+        else
+            (k, identity)
+        end
+        push!(mapping, (i, nk, fun))
+    end
+
+    reduce(hcat, DataFrame(sym => fun(df[!, i])) for (i,sym,fun) in mapping)
 end
 
 function download(name, url, filename)
