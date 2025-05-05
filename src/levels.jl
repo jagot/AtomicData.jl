@@ -138,8 +138,6 @@ function nist_levels_url(Z::Integer, Q::Integer, unit)
     url,base_name
 end
 
-functio
-
 function get_nist_levels(name::String, unit)
     Z,Q = parse_element(name)
     url,base_name = nist_levels_url(Z, Q, unit)
