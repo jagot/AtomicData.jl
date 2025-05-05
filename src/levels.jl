@@ -100,7 +100,7 @@ function nist_levels_url(Z::Integer, Q::Integer, unit)
     units = Dict(u"cm"^(-1) => 0,
                  u"eV" => 1,
                  u"Ry" => 2,
-                 u"hartree" => 2)
+                 u"hartree" => 3)
     unit_id = units[unit]
     name = "Z=$(Z) $(Q)"
     http_name = replace(name, " " => "+")
