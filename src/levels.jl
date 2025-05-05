@@ -138,10 +138,14 @@ function nist_levels_url(Z::Integer, Q::Integer, unit)
     url,base_name
 end
 
-function get_nist_levels(name::String, unit)
-    Z,Q = parse_element(name)
+function get_nist_levels(Z::Integer, Q::Integer, unit)
     url,base_name = nist_levels_url(Z, Q, unit)
     get_nist_levels(CSV.File(download_levels_dataset(url, base_name), delim='\t'), unit)
+end
+
+function get_nist_levels(name::String, unit)
+    Z,Q = parse_element(name)
+    get_nist_levels(Z, Q, unit)
 end
 
 function get_all_nist_levels(unit)
